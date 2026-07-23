@@ -1,0 +1,17 @@
+{
+  "data": {
+    "active": true,
+    "evseState": 1,
+    "evseSuspensionReason": 0,
+    "evseSystemError": 0,
+    "chargeSession": null,
+    "smartTariffBatteryInfo": null,
+    "nextScheduleInfo": null,
+    "evseIsThreePhase": false,
+    "isPaused": false,
+    "isScheduledPaused": false,
+    "isSmartTariffPaused": false
+  },
+  "message": "",
+  "errors": []
+}

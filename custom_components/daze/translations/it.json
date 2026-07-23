@@ -1,0 +1,66 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connetti a Daze",
+        "description": "Inserisci le credenziali che usi per accedere a webportal.dazeservice.com. Vengono salvate per permettere all'integrazione di riautenticarsi se la sessione scade.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Riautenticazione Daze",
+        "description": "Non è stato possibile rinnovare automaticamente la sessione Daze. Inserisci nuovamente la password.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Email o password non validi.",
+      "cannot_connect": "Impossibile connettersi al backend Daze.",
+      "wrong_account": "Queste credenziali appartengono a un account Daze diverso da quello in fase di riautenticazione.",
+      "unknown": "Errore imprevisto."
+    },
+    "abort": {
+      "already_configured": "Questo account Daze è già configurato.",
+      "reauth_successful": "Riautenticazione completata con successo."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "description": "Ogni quanto interrogare il backend Daze per aggiornare i sensori.",
+        "data": {
+          "scan_interval": "Intervallo di aggiornamento (secondi)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "power": { "name": "Potenza" },
+      "session_energy": { "name": "Energia sessione" },
+      "charging_current_l1": { "name": "Corrente di carica L1" },
+      "charging_current_l2": { "name": "Corrente di carica L2" },
+      "charging_current_l3": { "name": "Corrente di carica L3" },
+      "voltage_l1": { "name": "Tensione L1" },
+      "voltage_l2": { "name": "Tensione L2" },
+      "voltage_l3": { "name": "Tensione L3" },
+      "board_temperature": { "name": "Temperatura scheda" },
+      "case_temperature": { "name": "Temperatura case" },
+      "max_charging_current": { "name": "Corrente di carica massima" },
+      "status": { "name": "Codice stato" },
+      "evse_state": { "name": "Codice stato EVSE" },
+      "fan_status": { "name": "Stato ventola" },
+      "wifi_ssid": { "name": "SSID Wi-Fi" },
+      "software_version": { "name": "Versione software" },
+      "firmware_version": { "name": "Versione firmware" },
+      "grid_current_l1": { "name": "Corrente di rete L1" },
+      "grid_current_l2": { "name": "Corrente di rete L2" },
+      "grid_current_l3": { "name": "Corrente di rete L3" },
+      "tariff": { "name": "Tariffa energetica" }
+    }
+  }
+}

@@ -1,0 +1,12 @@
+{
+  "domain": "daze",
+  "name": "Daze",
+  "codeowners": ["@rdndnl"],
+  "config_flow": true,
+  "documentation": "https://github.com/rdndnl/ha-daze",
+  "integration_type": "hub",
+  "iot_class": "cloud_polling",
+  "issue_tracker": "https://github.com/rdndnl/ha-daze/issues",
+  "requirements": [],
+  "version": "0.1.0"
+}

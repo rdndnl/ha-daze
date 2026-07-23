@@ -1,0 +1,66 @@
+{
+  "config": {
+    "step": {
+      "user": {
+        "title": "Connect to Daze",
+        "description": "Enter the credentials you use to log in at webportal.dazeservice.com. They are stored so the integration can re-authenticate if your session expires.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      },
+      "reauth_confirm": {
+        "title": "Re-authenticate with Daze",
+        "description": "Your Daze session could not be renewed automatically. Enter your password again.",
+        "data": {
+          "password": "Password"
+        }
+      }
+    },
+    "error": {
+      "invalid_auth": "Invalid email or password.",
+      "cannot_connect": "Could not connect to the Daze backend.",
+      "wrong_account": "These credentials belong to a different Daze account than the one being re-authenticated.",
+      "unknown": "Unexpected error."
+    },
+    "abort": {
+      "already_configured": "This Daze account is already configured.",
+      "reauth_successful": "Re-authentication was successful."
+    }
+  },
+  "options": {
+    "step": {
+      "init": {
+        "description": "How often to poll the Daze backend for updated sensor values.",
+        "data": {
+          "scan_interval": "Scan interval (seconds)"
+        }
+      }
+    }
+  },
+  "entity": {
+    "sensor": {
+      "power": { "name": "Power" },
+      "session_energy": { "name": "Session energy" },
+      "charging_current_l1": { "name": "Charging current L1" },
+      "charging_current_l2": { "name": "Charging current L2" },
+      "charging_current_l3": { "name": "Charging current L3" },
+      "voltage_l1": { "name": "Voltage L1" },
+      "voltage_l2": { "name": "Voltage L2" },
+      "voltage_l3": { "name": "Voltage L3" },
+      "board_temperature": { "name": "Board temperature" },
+      "case_temperature": { "name": "Case temperature" },
+      "max_charging_current": { "name": "Max charging current" },
+      "status": { "name": "Status code" },
+      "evse_state": { "name": "EVSE state code" },
+      "fan_status": { "name": "Fan status" },
+      "wifi_ssid": { "name": "Wi-Fi SSID" },
+      "software_version": { "name": "Software version" },
+      "firmware_version": { "name": "Firmware version" },
+      "grid_current_l1": { "name": "Grid current L1" },
+      "grid_current_l2": { "name": "Grid current L2" },
+      "grid_current_l3": { "name": "Grid current L3" },
+      "tariff": { "name": "Energy tariff" }
+    }
+  }
+}

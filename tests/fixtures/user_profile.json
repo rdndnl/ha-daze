@@ -1,0 +1,26 @@
+{
+  "data": {
+    "id": "7eb3f643-54cb-4a63-b3cf-d0e9159c1cda",
+    "email": "d.arduini@gmail.com",
+    "identityId": "53d4b8c2-0071-704a-81dc-dbf38ce7e619",
+    "name": "Daniele",
+    "surname": "Arduini",
+    "address": "via Arno, 34",
+    "cap": "47833",
+    "city": "Morciano di Romagna ",
+    "province": "",
+    "telefono": "3484220391",
+    "updated": "2026-07-22T22:08:46.163632Z",
+    "language": "it-IT",
+    "country": "Italy",
+    "superAdmin": false,
+    "isDebuggable": false,
+    "privacyAccepted": true,
+    "marketingAccepted": false,
+    "appName": 1,
+    "userType": 0,
+    "vatNumber": ""
+  },
+  "message": "",
+  "errors": []
+}
