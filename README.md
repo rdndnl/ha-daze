@@ -1,5 +1,5 @@
-# Daze wallbox integration for Home Assistant
-=============================================
+Home Assistant custom integration for Daze EV charging products (Dazebox)
+=========================================================================
 
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
@@ -66,6 +66,55 @@ Polling interval (default 60s) can be adjusted afterwards from the integration's
   Contributions with observed value/state pairs are welcome.
 - Authenticates against the same AWS Cognito app client the web portal uses, via direct `USER_PASSWORD_AUTH` (no browser/webview involved).
   If Daze disables that auth flow this integration will need rework.
+
+## Development
+
+### Setup
+
+Requires Python 3.14+ and [`uv`](https://docs.astral.sh/uv/).
+
+```bash
+uv sync
+```
+
+This installs the dev/test tooling declared in `pyproject.toml`'s `dev` dependency group
+(Home Assistant core, pytest, and the libraries used by `scripts/auth_spike.py`). The
+integration itself has no runtime dependencies beyond what Home Assistant already
+provides - see `custom_components/daze/manifest.json`.
+
+### Running the tests
+
+```bash
+uv run python -m pytest tests/ -q
+```
+
+Use `python -m pytest`, not bare `uv run pytest` - the latter doesn't add the repo
+root to `sys.path`, so the `custom_components` package won't be importable.
+
+Tests run against fixture payloads captured from real HAR sessions
+(`tests/fixtures/*.json`) plus Home Assistant's own test harness
+(`pytest-homeassistant-custom-component`) - no live Daze account or network access is
+needed to run them.
+
+### Testing against a real Home Assistant instance
+
+Symlink the integration into your HA config and restart HA:
+
+```bash
+ln -s "$(pwd)/custom_components/daze" /path/to/homeassistant/config/custom_components/daze
+```
+
+Then add it from Settings → Devices & Services as usual.
+
+### `scripts/auth_spike.py`
+
+A standalone script (not part of the shipped integration) used to verify which Cognito
+auth flow the backend accepts, without going through Home Assistant. Useful if Daze
+ever changes their auth setup and `custom_components/daze/auth.py` needs revisiting:
+
+```bash
+DAZE_EMAIL="you@example.com" DAZE_PASSWORD="..." uv run python scripts/auth_spike.py
+```
 
 ## Contributing
 

@@ -1,0 +1,24 @@
+[project]
+name = "daze"
+version = "0.1.0"
+description = "Home Assistant custom integration for Daze EV charging products (Dazebox)"
+readme = "README.md"
+requires-python = ">=3.14"
+# The shipped integration (custom_components/daze) has no runtime dependencies of
+# its own beyond what Home Assistant already provides (aiohttp, voluptuous) - see
+# custom_components/daze/manifest.json "requirements": []. This project has no
+# install-time dependencies; everything below is dev/test tooling only.
+dependencies = []
+
+[dependency-groups]
+dev = [
+    # Home Assistant core + test harness, used to run tests/ against real HA APIs.
+    "homeassistant",
+    "pytest",
+    "pytest-asyncio",
+    "pytest-homeassistant-custom-component",
+    # scripts/auth_spike.py only (throwaway Cognito auth spike, not shipped).
+    "boto3",
+    "pycognito",
+    "requests",
+]
