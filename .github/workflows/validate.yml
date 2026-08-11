@@ -43,16 +43,16 @@ jobs:
         with:
           enable-cache: true
 
-      # Deliberately not `uv sync --locked`: the committed uv.lock still records
-      # daze 0.1.0 while pyproject.toml says 0.2.0, so --locked fails outright.
-      # Switch to it once the lockfile is back in sync - it's what stops a stale
-      # lock from silently resolving to different dependency versions here than
-      # the ones anyone gets locally.
+      # `--locked` fails the run rather than quietly rewriting uv.lock, so CI
+      # tests the exact dependency versions everyone resolves locally. If this
+      # step fails with "the lockfile needs to be updated", the lock has drifted
+      # from pyproject.toml: run `uv lock` and commit the result. A version bump
+      # is the usual cause - it changes the `daze` entry in the lock too.
       #
       # Python itself needs no setup step: uv reads .python-version (3.14) and
       # downloads a matching interpreter on its own.
       - name: Install dependencies
-        run: uv sync
+        run: uv sync --locked
 
       # `python -m pytest`, not bare `uv run pytest` - the latter doesn't put the
       # repo root on sys.path, so `custom_components` isn't importable and
