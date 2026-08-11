@@ -1,0 +1,61 @@
+# Dependabot keeps the pinned versions in this repository current. Nothing else
+# does: the workflow `uses:` refs are pinned to exact tags, and the dev tooling
+# is locked in uv.lock, so both stay frozen until something bumps them.
+#
+# The generated commits use conventional-commit prefixes on purpose. cliff.toml
+# sets `filter_unconventional = true`, so Dependabot's default "Bump x from a to
+# b" would vanish from the release notes by accident; `ci`/`chore` are skipped
+# there deliberately instead (see cliff.toml's commit_parsers).
+
+version: 2
+
+updates:
+  # `uses:` refs in .github/workflows/*.yml.
+  #
+  # Note that home-assistant/actions/hassfest@master is a branch ref, not a
+  # version - Dependabot cannot manage it, and that step keeps tracking master on
+  # its own. Pinning it isn't an option: the repository has published exactly one
+  # tag (1.0.0), and hassfest is expected to move with Home Assistant core.
+  - package-ecosystem: github-actions
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: ci
+    groups:
+      actions:
+        patterns: ["*"]
+
+  # pyproject.toml's `dev` group + uv.lock. Dev/test tooling only - the shipped
+  # integration declares no runtime dependencies (manifest.json
+  # "requirements": []), so nothing here reaches a user's Home Assistant.
+  #
+  # Updating pyproject.toml and uv.lock together is what keeps CI's
+  # `uv sync --locked` from failing on a drifted lock.
+  - package-ecosystem: uv
+    directory: /
+    schedule:
+      interval: weekly
+      day: monday
+    commit-message:
+      prefix: chore
+    # Don't jump on a release the same day it lands - Home Assistant core ships
+    # often and occasionally pulls a release back.
+    cooldown:
+      default-days: 7
+    groups:
+      # These two release in lockstep (the test harness pins the core version it
+      # was built against), so a pull request moving only one of them fails to
+      # resolve. Kept in their own group, apart from the tooling below: a red
+      # test run on this pull request points at Home Assistant core directly,
+      # with no unrelated bumps to rule out first.
+      homeassistant:
+        patterns:
+          - homeassistant
+          - pytest-homeassistant-custom-component
+      dev-tooling:
+        patterns: ["*"]
+        exclude-patterns:
+          - homeassistant
+          - pytest-homeassistant-custom-component
