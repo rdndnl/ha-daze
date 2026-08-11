@@ -38,8 +38,10 @@ jobs:
       - name: Check out repository
         uses: actions/checkout@v4
 
+      # Pinned to an exact tag on purpose: setup-uv stopped publishing floating
+      # major tags after v7, so `@v9` does not resolve at all.
       - name: Set up uv
-        uses: astral-sh/setup-uv@v9
+        uses: astral-sh/setup-uv@v9.0.0
         with:
           enable-cache: true
 
