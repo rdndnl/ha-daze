@@ -4,8 +4,6 @@ Home Assistant custom integration for Daze EV charging products (Dazebox)
 [![hacs_badge](https://img.shields.io/badge/HACS-Custom-orange.svg)](https://github.com/hacs/integration)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](LICENSE)
 
-<a href="https://my.home-assistant.io/redirect/hacs_repository/?owner=rdndnl&amp;repository=ha-daze&amp;category=Integration" target="_blank" rel="noreferrer noopener"><img src="https://my.home-assistant.io/badges/hacs_repository.svg" alt="Open your Home Assistant instance and open a repository inside the Home Assistant Community Store."></a>
-
 Home Assistant custom integration that exposes sensor data from a [Daze](https://www.dazeservice.com/) EV wallbox charger,
 read from the same backend used by the official [webportal.dazeservice.com](https://webportal.dazeservice.com/) web app.
 
@@ -78,6 +76,16 @@ Polling interval (default 60s) can be adjusted afterwards from the integration's
   the raw value.
 - Authenticates against the same AWS Cognito app client the web portal uses, via direct `USER_PASSWORD_AUTH` (no browser/webview involved).
   If Daze disables that auth flow this integration will need rework.
+
+## Companion projects
+
+Independent projects built on top of this integration, maintained by other people:
+
+- **[DAZE Dashboard](https://github.com/fabiovit/daze-dashboard)** by [@fabiovit](https://github.com/fabiovit) -
+  a Home Assistant sidebar panel for Daze wallboxes (live charging view, diagnostics, session statistics).
+
+> These are not maintained by, affiliated with, or supported by this project - please report issues with them
+in their own repositories.
 
 ## Development
 
