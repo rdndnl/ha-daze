@@ -39,6 +39,11 @@
     }
   },
   "entity": {
+    "button": {
+      "start_charge": { "name": "Start charging" },
+      "resume_charge": { "name": "Resume charging" },
+      "stop_charge": { "name": "Stop charging" }
+    },
     "sensor": {
       "power": { "name": "Power" },
       "session_energy": { "name": "Session energy" },
@@ -105,6 +110,17 @@
         }
       },
       "fan_status": { "name": "Fan status" },
+      "available_charge_command": {
+        "name": "Available charge command",
+        "state": {
+          "stop": "Stop",
+          "play": "Resume"
+        }
+      },
+      "session_id": { "name": "Session ID" },
+      "session_start": { "name": "Session start" },
+      "session_duration": { "name": "Session duration" },
+      "session_user": { "name": "Session user" },
       "wifi_ssid": { "name": "Wi-Fi SSID" },
       "software_version": { "name": "Software version" },
       "firmware_version": { "name": "Firmware version" },
@@ -112,6 +128,9 @@
       "grid_current_l2": { "name": "Grid current L2" },
       "grid_current_l3": { "name": "Grid current L3" },
       "tariff": { "name": "Energy tariff" }
+    },
+    "switch": {
+      "charging": { "name": "Charging" }
     }
   }
 }
