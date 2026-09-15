@@ -23,6 +23,7 @@ from custom_components.daze.const import (
 
 EMAIL = "a@b.com"
 NETWORK_UID = "00000000-0000-0000-0000-000000000003"
+EVSE_SERIAL = "TEST0000001"
 SOCKET_SERIAL = "TEST0000001"
 
 
@@ -43,6 +44,19 @@ def _mock_backend(aioclient_mock, networks_data, evses_data, remote_info_data):
     aioclient_mock.get(
         f"{WEBAPI_BASE_URL}/v3/sockets/{SOCKET_SERIAL}/remoteInfo",
         json={"data": remote_info_data, "message": "", "errors": []},
+    )
+    aioclient_mock.get(
+        f"{WEBAPI_BASE_URL}/v3/evses/{EVSE_SERIAL}/commandAuthorizations",
+        json={
+            "data": {
+                "evseSerialNumber": EVSE_SERIAL,
+                "socketAvailableChargeCommand": [
+                    {"socketSerialNumber": SOCKET_SERIAL, "availableChargeCommand": 3}
+                ],
+            },
+            "message": "",
+            "errors": [],
+        },
     )
 
 

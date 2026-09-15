@@ -81,3 +81,17 @@ EVSE_SYSTEM_ERROR_LABELS: dict[int, str] = {
     10: "evse_not_powered",
     11: "board_l1_overtemp",
 }
+
+# `availableChargeCommand` from GET /v3/evses/{serial}/commandAuthorizations. This is
+# the field the vendor portal drives its own play/stop button from, and the only
+# reliable signal for which command a socket will currently accept: after a stopcharge
+# it flips within ~10s, while `evseState` can lag noticeably longer (16s observed) and
+# its value 6 ("ev_connected_wait_power") is not a pause marker. Anything other than
+# the two values below means neither command is offered (idle, no cable, error).
+CHARGE_COMMAND_STOP = 2  # charging -> stop is offered
+CHARGE_COMMAND_PLAY = 3  # paused -> play (resume) is offered
+
+CHARGE_COMMAND_LABELS: dict[int, str] = {
+    CHARGE_COMMAND_STOP: "stop",
+    CHARGE_COMMAND_PLAY: "play",
+}

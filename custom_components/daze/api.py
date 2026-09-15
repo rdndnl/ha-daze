@@ -118,3 +118,45 @@ class DazeApiClient:
             f"/v3/sockets/{serial_number}/remoteInfo",
             params={"includeEcoInfo": "true", "includeNextSchedule": "true"},
         )
+
+    async def async_get_command_authorizations(self, evse_serial: str) -> dict[str, Any] | None:
+        """Which charge command each socket of this EVSE currently accepts.
+
+        One call answers for every socket of the wallbox, so the coordinator fetches
+        this per EVSE rather than per socket.
+        """
+        return await self._request(
+            "GET",
+            f"/v3/evses/{evse_serial}/commandAuthorizations",
+            params={"checkMode": "RPC"},
+        )
+
+    # Charge commands are addressed by the SOCKET serial number (the /v3/sockets/...
+    # paths the vendor portal itself calls), not by the EVSE serial. The backend
+    # answers 200 with an empty `data`, so these return nothing on purpose: callers
+    # must not infer the new state from the response and should refresh instead.
+
+    async def async_start_charge(self, serial_number: str) -> None:
+        """Open a new charging session on one socket.
+
+        This also arms the authorization window (~60s observed) during which the cable
+        has to be plugged in. It does NOT resume a paused session - see
+        async_play_charge.
+        """
+        await self._request("POST", f"/v3/sockets/{serial_number}/commands/startcharge", json={})
+
+    async def async_stop_charge(self, serial_number: str) -> None:
+        """Pause the running charging session on one socket.
+
+        The session stays open: the socket then reports availableChargeCommand
+        CHARGE_COMMAND_PLAY and only playcharge picks it back up.
+        """
+        await self._request("POST", f"/v3/sockets/{serial_number}/commands/stopcharge", json={})
+
+    async def async_play_charge(self, serial_number: str) -> None:
+        """Resume a paused charging session on one socket.
+
+        Distinct from startcharge: after a stopcharge the wallbox silently ignores
+        startcharge, which is exactly the "start does nothing after stop" symptom.
+        """
+        await self._request("POST", f"/v3/sockets/{serial_number}/commands/playcharge", json={})

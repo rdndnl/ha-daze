@@ -263,3 +263,68 @@ async def test_server_error_raises_cannot_connect(hass, aioclient_mock):
             await api.async_get_user_profile("a@b.com")
     finally:
         await session.close()
+
+
+async def test_get_command_authorizations(hass, aioclient_mock, command_authorizations_data):
+    aioclient_mock.get(
+        f"{WEBAPI_BASE_URL}/v3/evses/TEST0000001/commandAuthorizations",
+        params={"checkMode": "RPC"},
+        json={"data": command_authorizations_data, "message": "", "errors": []},
+    )
+    session = aioclient_mock.create_session(hass.loop)
+    try:
+        api = DazeApiClient(session, _fresh_auth(session))
+        result = await api.async_get_command_authorizations("TEST0000001")
+    finally:
+        await session.close()
+
+    assert result["socketAvailableChargeCommand"][0]["availableChargeCommand"] == 3
+
+
+@pytest.mark.parametrize(
+    ("method_name", "command"),
+    [
+        ("async_start_charge", "startcharge"),
+        ("async_stop_charge", "stopcharge"),
+        ("async_play_charge", "playcharge"),
+    ],
+)
+async def test_charge_commands_post_to_socket_path(hass, aioclient_mock, method_name, command):
+    """Commands go to /v3/sockets/{socket serial}/commands/{command} with an empty body.
+
+    The backend answers with no `data`, so the methods return None and the caller is
+    expected to refresh rather than read anything back.
+    """
+    aioclient_mock.post(
+        f"{WEBAPI_BASE_URL}/v3/sockets/TEST0000001/commands/{command}",
+        json={"message": "", "errors": []},
+    )
+    session = aioclient_mock.create_session(hass.loop)
+    try:
+        api = DazeApiClient(session, _fresh_auth(session))
+        result = await getattr(api, method_name)("TEST0000001")
+    finally:
+        await session.close()
+
+    assert result is None
+    assert aioclient_mock.call_count == 1
+    method, url, data, headers = aioclient_mock.mock_calls[0]
+    assert method == "POST"
+    assert url.path == f"/v3/sockets/TEST0000001/commands/{command}"
+    assert data == {}
+    assert headers["Authorization"] == "Bearer valid-token"
+
+
+async def test_charge_command_http_error_raises_cannot_connect(hass, aioclient_mock):
+    aioclient_mock.post(
+        f"{WEBAPI_BASE_URL}/v3/sockets/TEST0000001/commands/startcharge",
+        status=500,
+        text="boom",
+    )
+    session = aioclient_mock.create_session(hass.loop)
+    try:
+        api = DazeApiClient(session, _fresh_auth(session))
+        with pytest.raises(DazeCannotConnectError, match="HTTP 500"):
+            await api.async_start_charge("TEST0000001")
+    finally:
+        await session.close()

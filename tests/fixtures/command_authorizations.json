@@ -1,0 +1,13 @@
+{
+  "data": {
+    "evseSerialNumber": "TEST0000001",
+    "socketAvailableChargeCommand": [
+      {
+        "socketSerialNumber": "TEST0000001",
+        "availableChargeCommand": 3
+      }
+    ]
+  },
+  "message": "",
+  "errors": []
+}
