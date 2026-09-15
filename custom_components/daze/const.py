@@ -95,3 +95,9 @@ CHARGE_COMMAND_LABELS: dict[int, str] = {
     CHARGE_COMMAND_STOP: "stop",
     CHARGE_COMMAND_PLAY: "play",
 }
+
+# How long the charging switch keeps a locally assumed state before the polled value
+# wins again. Longer than the worst observed backend lag after a command (~16s), short
+# enough that a command the wallbox silently ignored corrects itself while the user is
+# still looking at it.
+OPTIMISTIC_STATE_TIMEOUT_SECONDS = 45

@@ -12,6 +12,7 @@ from datetime import timedelta
 
 import pytest
 from homeassistant.const import CONF_EMAIL
+from homeassistant.helpers import entity_registry as er
 from pytest_homeassistant_custom_component.common import MockConfigEntry
 
 from custom_components.daze.const import (
@@ -25,6 +26,7 @@ EMAIL = "a@b.com"
 NETWORK_UID = "00000000-0000-0000-0000-000000000003"
 EVSE_SERIAL = "TEST0000001"
 SOCKET_SERIAL = "TEST0000001"
+SOCKET_ID = "00000000-0000-0000-0000-000000000007"
 
 
 @pytest.fixture(autouse=True)
@@ -130,3 +132,26 @@ async def test_options_update_applies_scan_interval_in_place(
 
     assert hass.data[DOMAIN][entry.entry_id] is coordinator
     assert coordinator.update_interval == timedelta(seconds=120)
+
+
+async def test_control_entities_created(
+    hass, aioclient_mock, networks_data, evses_data, remote_info_data
+):
+    entry = await _setup_entry(hass, aioclient_mock, networks_data, evses_data, remote_info_data)
+
+    switches = hass.states.async_all("switch")
+    assert len(switches) == 1
+    # commandAuthorizations mocked with availableChargeCommand 3 (play offered => paused)
+    assert switches[0].state == "off"
+
+    registry = er.async_get(hass)
+    button_unique_ids = {
+        reg_entry.unique_id
+        for reg_entry in er.async_entries_for_config_entry(registry, entry.entry_id)
+        if reg_entry.domain == "button"
+    }
+    assert button_unique_ids == {
+        f"{SOCKET_ID}_start_charge",
+        f"{SOCKET_ID}_resume_charge",
+        f"{SOCKET_ID}_stop_charge",
+    }
