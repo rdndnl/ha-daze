@@ -4,6 +4,7 @@ from __future__ import annotations
 
 from collections.abc import Callable
 from dataclasses import dataclass
+from datetime import datetime
 
 from homeassistant.components.sensor import (
     SensorDeviceClass,
@@ -19,12 +20,19 @@ from homeassistant.const import (
     UnitOfEnergy,
     UnitOfPower,
     UnitOfTemperature,
+    UnitOfTime,
 )
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import StateType
+from homeassistant.util import dt as dt_util
 
-from .const import DOMAIN, EVSE_STATE_LABELS, EVSE_SYSTEM_ERROR_LABELS
+from .const import (
+    CHARGE_COMMAND_LABELS,
+    DOMAIN,
+    EVSE_STATE_LABELS,
+    EVSE_SYSTEM_ERROR_LABELS,
+)
 from .coordinator import DazeCoordinator
 from .entity import (
     DazeEvseEntity,
@@ -45,9 +53,25 @@ def _wh_to_kwh(value: int | None) -> float | None:
     return value / 1000 if value is not None else None
 
 
+def _charge_time_to_minutes(value: str | None) -> float | None:
+    """Session chargeTime arrives as "HH:MM:SS"; hours are not wrapped at 24."""
+    if not value:
+        return None
+    parts = value.split(":")
+    if len(parts) != 3 or not all(part.isdigit() for part in parts):
+        return None
+    hours, minutes, seconds = (int(part) for part in parts)
+    return round(hours * 60 + minutes + seconds / 60, 1)
+
+
+def _iso_to_datetime(value: str | None) -> datetime | None:
+    """Session startTime arrives as an ISO string; timestamp sensors want a datetime."""
+    return dt_util.parse_datetime(value) if value else None
+
+
 @dataclass(frozen=True, kw_only=True)
 class DazeSocketSensorEntityDescription(SensorEntityDescription):
-    value_fn: Callable[[DazeSocket], StateType]
+    value_fn: Callable[[DazeSocket], StateType | datetime]
     requires_three_phase: bool = False
 
 
@@ -183,6 +207,46 @@ SOCKET_SENSOR_DESCRIPTIONS: tuple[DazeSocketSensorEntityDescription, ...] = (
         entity_category=EntityCategory.DIAGNOSTIC,
         value_fn=lambda s: s.last_fan_status,
     ),
+    # Which charge command the socket currently accepts (see CHARGE_COMMAND_LABELS).
+    # The charging switch drives off this, so it is worth being able to see it.
+    DazeSocketSensorEntityDescription(
+        key="available_charge_command",
+        translation_key="available_charge_command",
+        device_class=SensorDeviceClass.ENUM,
+        options=list(CHARGE_COMMAND_LABELS.values()),
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda s: CHARGE_COMMAND_LABELS.get(s.available_charge_command),
+    ),
+    # --- Charging session (chargeSession object inside remoteInfo) ---
+    # session_id changes exactly once per charge and goes back to unknown when the
+    # wallbox closes the session, so an automation triggering on it can log one row per
+    # charge without guessing where one ended and the next began.
+    DazeSocketSensorEntityDescription(
+        key="session_id",
+        translation_key="session_id",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda s: s.session_id,
+    ),
+    DazeSocketSensorEntityDescription(
+        key="session_start",
+        translation_key="session_start",
+        device_class=SensorDeviceClass.TIMESTAMP,
+        value_fn=lambda s: _iso_to_datetime(s.session_start_time),
+    ),
+    DazeSocketSensorEntityDescription(
+        key="session_duration",
+        translation_key="session_duration",
+        device_class=SensorDeviceClass.DURATION,
+        native_unit_of_measurement=UnitOfTime.MINUTES,
+        suggested_display_precision=0,
+        value_fn=lambda s: _charge_time_to_minutes(s.session_charge_time),
+    ),
+    DazeSocketSensorEntityDescription(
+        key="session_user",
+        translation_key="session_user",
+        entity_category=EntityCategory.DIAGNOSTIC,
+        value_fn=lambda s: s.session_user_name,
+    ),
 )
 
 EVSE_SENSOR_DESCRIPTIONS: tuple[DazeEvseSensorEntityDescription, ...] = (
@@ -287,7 +351,7 @@ class DazeSocketSensor(DazeSocketEntity, SensorEntity):
             self._attr_device_info = socket_device_info(evse, socket)
 
     @property
-    def native_value(self) -> StateType:
+    def native_value(self) -> StateType | datetime:
         socket = self._socket
         return self.entity_description.value_fn(socket) if socket is not None else None
 
