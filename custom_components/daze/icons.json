@@ -1,0 +1,12 @@
+{
+  "entity": {
+    "button": {
+      "start_charge": { "default": "mdi:play" },
+      "resume_charge": { "default": "mdi:play-pause" },
+      "stop_charge": { "default": "mdi:stop" }
+    },
+    "switch": {
+      "charging": { "default": "mdi:ev-station" }
+    }
+  }
+}

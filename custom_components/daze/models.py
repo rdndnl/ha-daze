@@ -90,6 +90,17 @@ class DazeSocket:
     is_paused: bool | None = None
     active: bool | None = None
 
+    # From the chargeSession object inside remoteInfo. Present only while a session is
+    # open; all of these go back to None once the wallbox closes it, which is what makes
+    # session_id usable as a "one charge = one row" key for reporting.
+    session_id: int | None = None
+    session_start_time: str | None = None
+    session_charge_time: str | None = None  # "HH:MM:SS", hours may exceed 24
+    session_user_name: str | None = None
+
+    # Populated separately from GET /v3/evses/{serial}/commandAuthorizations.
+    available_charge_command: int | None = None
+
     @classmethod
     def from_dict(cls, raw: dict) -> DazeSocket:
         return cls(
@@ -121,6 +132,20 @@ class DazeSocket:
         self.evse_system_error = raw.get("evseSystemError")
         self.is_paused = raw.get("isPaused")
         self.active = raw.get("active")
+
+        charge_session = raw.get("chargeSession") or {}
+        self.session_id = charge_session.get("sessionId")
+        self.session_start_time = charge_session.get("startTime")
+        self.session_charge_time = charge_session.get("chargeTime")
+        user = charge_session.get("user") or {}
+        # Full name if both halves are there, otherwise whichever one is - the field is
+        # only ever displayed, never matched on.
+        parts = [user.get("userName"), user.get("userSurname")]
+        self.session_user_name = " ".join(p for p in parts if p) or None
+
+    def apply_command_authorization(self, available_charge_command: int | None) -> None:
+        """Merge in this socket's entry from GET /v3/evses/{serial}/commandAuthorizations."""
+        self.available_charge_command = available_charge_command
 
 
 @dataclass

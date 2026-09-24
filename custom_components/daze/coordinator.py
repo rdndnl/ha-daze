@@ -42,6 +42,11 @@ class DazeCoordinator(DataUpdateCoordinator[DazeAccountData]):
         self._email = email
         self._identity_id = identity_id
 
+    @property
+    def api(self) -> DazeApiClient:
+        """The REST client, for platforms that send commands outside the poll cycle."""
+        return self._api
+
     async def _async_update_data(self) -> DazeAccountData:
         try:
             networks = await self._api.async_get_networks(self._email)
@@ -50,6 +55,7 @@ class DazeCoordinator(DataUpdateCoordinator[DazeAccountData]):
             for network in networks:
                 evses = await self._api.async_get_network_evses(network.uid)
                 await self._async_fill_socket_remote_info(evses)
+                await self._async_fill_command_authorizations(evses)
                 networks_data[network.uid] = DazeNetworkData(network=network, evses=evses)
 
             return DazeAccountData(identity_id=self._identity_id, networks=networks_data)
@@ -77,6 +83,38 @@ class DazeCoordinator(DataUpdateCoordinator[DazeAccountData]):
         # was never retrieved" in the log long after the update was abandoned.
         results = await asyncio.gather(
             *(_fetch(socket) for socket in sockets), return_exceptions=True
+        )
+        for result in results:
+            if isinstance(result, BaseException):
+                raise result
+
+    async def _async_fill_command_authorizations(self, evses) -> None:
+        """Merge, per EVSE, which charge command each of its sockets accepts.
+
+        One request per EVSE, not per socket: the endpoint answers for every socket of
+        the wallbox at once. Same gather/return_exceptions discipline as remoteInfo.
+        """
+        semaphore = asyncio.Semaphore(MAX_CONCURRENT_SOCKET_REQUESTS)
+
+        async def _fetch(evse) -> None:
+            async with semaphore:
+                raw = await self._api.async_get_command_authorizations(evse.serial_number)
+                if not raw:
+                    return
+                by_serial = {
+                    entry.get("socketSerialNumber"): entry.get("availableChargeCommand")
+                    for entry in raw.get("socketAvailableChargeCommand") or []
+                }
+                for socket in evse.sockets:
+                    if socket.serial_number in by_serial:
+                        socket.apply_command_authorization(by_serial[socket.serial_number])
+
+        evses_with_sockets = [evse for evse in evses if evse.sockets]
+        if not evses_with_sockets:
+            return
+
+        results = await asyncio.gather(
+            *(_fetch(evse) for evse in evses_with_sockets), return_exceptions=True
         )
         for result in results:
             if isinstance(result, BaseException):

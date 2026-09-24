@@ -33,3 +33,13 @@ def evses_data() -> list:
 @pytest.fixture
 def remote_info_data() -> dict:
     return load_fixture("remote_info.json")["data"]
+
+
+@pytest.fixture
+def remote_info_charging_data() -> dict:
+    return load_fixture("remote_info_charging.json")["data"]
+
+
+@pytest.fixture
+def command_authorizations_data() -> dict:
+    return load_fixture("command_authorizations.json")["data"]

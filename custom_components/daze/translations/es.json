@@ -39,6 +39,11 @@
     }
   },
   "entity": {
+    "button": {
+      "start_charge": { "name": "Iniciar carga" },
+      "resume_charge": { "name": "Reanudar carga" },
+      "stop_charge": { "name": "Detener carga" }
+    },
     "sensor": {
       "power": { "name": "Potencia" },
       "session_energy": { "name": "Energía de la sesión" },
@@ -105,6 +110,17 @@
         }
       },
       "fan_status": { "name": "Estado del ventilador" },
+      "available_charge_command": {
+        "name": "Comando de carga disponible",
+        "state": {
+          "stop": "Detener",
+          "play": "Reanudar"
+        }
+      },
+      "session_id": { "name": "ID de sesión" },
+      "session_start": { "name": "Inicio de sesión" },
+      "session_duration": { "name": "Duración de la sesión" },
+      "session_user": { "name": "Usuario de la sesión" },
       "wifi_ssid": { "name": "SSID Wi-Fi" },
       "software_version": { "name": "Versión de software" },
       "firmware_version": { "name": "Versión de firmware" },
@@ -112,6 +128,9 @@
       "grid_current_l2": { "name": "Corriente de red L2" },
       "grid_current_l3": { "name": "Corriente de red L3" },
       "tariff": { "name": "Tarifa energética" }
+    },
+    "switch": {
+      "charging": { "name": "Carga" }
     }
   }
 }

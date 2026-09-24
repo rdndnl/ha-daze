@@ -39,6 +39,11 @@
     }
   },
   "entity": {
+    "button": {
+      "start_charge": { "name": "Avvia ricarica" },
+      "resume_charge": { "name": "Riprendi ricarica" },
+      "stop_charge": { "name": "Ferma ricarica" }
+    },
     "sensor": {
       "power": { "name": "Potenza" },
       "session_energy": { "name": "Energia sessione" },
@@ -105,6 +110,17 @@
         }
       },
       "fan_status": { "name": "Stato ventola" },
+      "available_charge_command": {
+        "name": "Comando di ricarica disponibile",
+        "state": {
+          "stop": "Ferma",
+          "play": "Riprendi"
+        }
+      },
+      "session_id": { "name": "ID sessione" },
+      "session_start": { "name": "Inizio sessione" },
+      "session_duration": { "name": "Durata sessione" },
+      "session_user": { "name": "Utente sessione" },
       "wifi_ssid": { "name": "SSID Wi-Fi" },
       "software_version": { "name": "Versione software" },
       "firmware_version": { "name": "Versione firmware" },
@@ -112,6 +128,9 @@
       "grid_current_l2": { "name": "Corrente di rete L2" },
       "grid_current_l3": { "name": "Corrente di rete L3" },
       "tariff": { "name": "Tariffa energetica" }
+    },
+    "switch": {
+      "charging": { "name": "Ricarica" }
     }
   }
 }
