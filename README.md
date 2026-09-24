@@ -140,6 +140,12 @@ DAZE_EMAIL="you@example.com" DAZE_PASSWORD="..." uv run python scripts/auth_spik
 
 Issues and PRs are welcome at [github.com/rdndnl/ha-daze](https://github.com/rdndnl/ha-daze/issues).
 
+
+## Acknowledgements
+
+Thanks to [MasterJKapp](https://github.com/@jkuran) for the contribution in
+charging control (start/stop/resume) + session sensors [PR #15](https://github.com/rdndnl/ha-daze/pull/15).
+
 ## License
 
 [MIT](LICENSE)
