@@ -143,7 +143,7 @@ Issues and PRs are welcome at [github.com/rdndnl/ha-daze](https://github.com/rdn
 
 ## Acknowledgements
 
-Thanks to [MasterJKapp](https://github.com/@jkuran) for the contribution in
+Thanks to [MasterJKapp](https://github.com/jkuran) for the contribution in
 charging control (start/stop/resume) + session sensors [PR #15](https://github.com/rdndnl/ha-daze/pull/15).
 
 ## License
