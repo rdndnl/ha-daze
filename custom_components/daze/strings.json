@@ -3,10 +3,10 @@
     "step": {
       "user": {
         "title": "Connect to Daze",
-        "description": "Enter the credentials you use to log in at webportal.dazeservice.com. They are stored so the integration can re-authenticate if your session expires.",
-        "data": {
-          "email": "Email",
-          "password": "Password"
+        "description": "How do you sign in to the Daze app / web portal?",
+        "menu_options": {
+          "password": "Email and password",
+          "google": "Google account (refresh token)"
         }
       },
       "reauth_confirm": {
@@ -15,13 +15,36 @@
         "data": {
           "password": "Password"
         }
+      },
+      "password": {
+        "title": "Connect to Daze",
+        "description": "Enter the credentials you use to log in at webportal.dazeservice.com. They are stored so the integration can re-authenticate if your session expires.",
+        "data": {
+          "email": "Email",
+          "password": "Password"
+        }
+      },
+      "google": {
+        "title": "Connect a Google account",
+        "description": "Google accounts have no password, so paste the Cognito refresh token instead. Log in at webportal.dazeservice.com (preferably in a private window), open the browser DevTools > Application > Local storage, copy the value of the key ending in .refreshToken, then close the window WITHOUT clicking log out (logging out revokes the token). Treat the token like a password.",
+        "data": {
+          "refresh_token": "Refresh token"
+        }
+      },
+      "reauth_google": {
+        "title": "Re-authenticate with Daze",
+        "description": "The stored Daze refresh token expired or was revoked. Log in again at webportal.dazeservice.com and paste a new refresh token (DevTools > Application > Local storage, key ending in .refreshToken).",
+        "data": {
+          "refresh_token": "Refresh token"
+        }
       }
     },
     "error": {
       "invalid_auth": "Invalid email or password.",
       "cannot_connect": "Could not connect to the Daze backend.",
       "wrong_account": "These credentials belong to a different Daze account than the one being re-authenticated.",
-      "unknown": "Unexpected error."
+      "unknown": "Unexpected error.",
+      "invalid_token": "Invalid, expired or revoked refresh token."
     },
     "abort": {
       "already_configured": "This Daze account is already configured.",

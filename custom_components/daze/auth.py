@@ -14,6 +14,8 @@ never know which strategy is in use.
 
 from __future__ import annotations
 
+import base64
+import json
 import time
 from collections.abc import Awaitable, Callable
 from dataclasses import dataclass
@@ -41,7 +43,26 @@ __all__ = [
     "CognitoDirectAuthStrategy",
     "CognitoHostedLoginAuthStrategy",
     "DazeAuth",
+    "decode_jwt_claims",
 ]
+
+
+def decode_jwt_claims(token: str) -> dict[str, Any]:
+    """Return the claims of a JWT WITHOUT verifying its signature.
+
+    Only used to read the `email` claim out of an ID token that we have just received
+    directly from Cognito over TLS (so there is nothing to verify). Never use this to
+    trust a token that came from somewhere else.
+    """
+    try:
+        payload = token.split(".")[1]
+        payload += "=" * (-len(payload) % 4)
+        claims = json.loads(base64.urlsafe_b64decode(payload))
+    except (IndexError, ValueError) as err:
+        raise DazeInvalidAuthError("Malformed ID token") from err
+    if not isinstance(claims, dict):
+        raise DazeInvalidAuthError("Malformed ID token")
+    return claims
 
 
 @dataclass
@@ -227,6 +248,17 @@ class DazeAuth:
 
     async def async_login(self, email: str, password: str) -> TokenSet:
         self._tokens = await self._strategy.async_login(self._session, email, password)
+        await self._notify_token_update()
+        return self._tokens
+
+    async def async_login_with_refresh_token(self, refresh_token: str) -> TokenSet:
+        """Sign in from an existing Cognito refresh token (e.g. Google/federated users).
+
+        Federated (Google) users have no password, so USER_PASSWORD_AUTH cannot work for
+        them. A refresh token obtained by logging in once at the web portal can be
+        exchanged for fresh access/id tokens with REFRESH_TOKEN_AUTH instead.
+        """
+        self._tokens = await self._strategy.async_refresh(self._session, refresh_token)
         await self._notify_token_update()
         return self._tokens
 
