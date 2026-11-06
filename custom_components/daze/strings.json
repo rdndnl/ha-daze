@@ -129,8 +129,12 @@
       "grid_current_l3": { "name": "Grid current L3" },
       "tariff": { "name": "Energy tariff" }
     },
+    "number": {
+      "max_power": { "name": "Max charging power" }
+    },
     "switch": {
-      "charging": { "name": "Charging" }
+      "charging": { "name": "Charging" },
+      "eco_mode": { "name": "Eco mode (PV self-consumption)" }
     }
   }
 }

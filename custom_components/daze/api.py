@@ -18,7 +18,13 @@ import aiohttp
 from homeassistant.exceptions import ConfigEntryAuthFailed
 
 from .auth import DazeAuth
-from .const import REQUEST_TIMEOUT, REQUEST_TIMEOUT_RETRIES, WEBAPI_BASE_URL
+from .const import (
+    RECHARGE_MODALITY_SELF_CONSUMPTION,
+    RECHARGE_MODALITY_STANDARD,
+    REQUEST_TIMEOUT,
+    REQUEST_TIMEOUT_RETRIES,
+    WEBAPI_BASE_URL,
+)
 from .exceptions import DazeAuthError, DazeCannotConnectError
 from .models import DazeEvse, DazeNetwork
 
@@ -108,7 +114,11 @@ class DazeApiClient:
 
     async def async_get_network_evses(self, network_uid: str) -> list[DazeEvse]:
         raw_list = await self._request(
-            "GET", f"/v3/networks/{network_uid}/evses", params={"includeEcoInfo": "false"}
+            # includeEcoInfo=true: without it the payload can omit ecoModeEnabled, which
+            # the eco-mode switch reads back.
+            "GET",
+            f"/v3/networks/{network_uid}/evses",
+            params={"includeEcoInfo": "true"},
         )
         return [DazeEvse.from_dict(raw) for raw in (raw_list or [])]
 
@@ -160,3 +170,41 @@ class DazeApiClient:
         startcharge, which is exactly the "start does nothing after stop" symptom.
         """
         await self._request("POST", f"/v3/sockets/{serial_number}/commands/playcharge", json={})
+
+    # Configuration commands are addressed by the EVSE serial (/v3/evses/...), unlike the
+    # charge commands above. Both are the calls the vendor web portal itself makes
+    # (webportal.dazeservice.com); verified on a DT01 against the app.
+
+    async def async_set_eco_mode(self, evse_serial: str, enabled: bool) -> None:
+        """Switch the wallbox between PV self-consumption ("eco") and standard charging.
+
+        The portal's device page sends PUT .../rechargeModality with its RechargeModality
+        enum: 1 = Standard ("Boost" in the app), 2 = SelfConsumption, 3 = Scheduling.
+        The backend then flips ecoModeEnabled on the EVSE and on its network
+        (ecoModeType, networkRechargeModality, operationMode 4/3 follow).
+
+        Asking for the modality that is already active answers 404 with error 101
+        "eco mode not supported"; _request maps 404 to None, so that no-op is silent.
+        (The older POST .../configurations/ecoMode some projects use answers 404 here.)
+        """
+        await self._request(
+            "PUT",
+            f"/v3/evses/{evse_serial}/rechargeModality",
+            json={
+                "newRechargeModality": RECHARGE_MODALITY_SELF_CONSUMPTION
+                if enabled
+                else RECHARGE_MODALITY_STANDARD,
+                "sendRpcToDevice": True,
+            },
+        )
+
+    async def async_set_max_charging_current(self, evse_serial: str, current_ma: int) -> None:
+        """Set the per-phase charging current ceiling, in milliamps."""
+        await self._request(
+            "POST",
+            f"/v3/evses/{evse_serial}/configurations/maxExternalChargingCurrent",
+            json={
+                "evseSerialNumber": evse_serial,
+                "maxExternalChargingCurrentInMilliAmps": int(current_ma),
+            },
+        )

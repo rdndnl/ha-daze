@@ -164,6 +164,11 @@ class DazeEvse:
     last_supply_grid_instant_current_l1: int | None  # mA
     last_supply_grid_instant_current_l2: int | None  # mA
     last_supply_grid_instant_current_l3: int | None  # mA
+    # Charging configuration, as set from the vendor app (or from the eco switch and
+    # max power number entities).
+    eco_mode_enabled: bool | None = None
+    max_external_charging_current: int | None = None  # mA per phase
+    max_installation_current: int | None = None  # mA per phase, installer ceiling
     sockets: list[DazeSocket] = field(default_factory=list)
 
     @classmethod
@@ -181,6 +186,9 @@ class DazeEvse:
             last_supply_grid_instant_current_l1=raw.get("lastSupplyGridInstantCurrentL1"),
             last_supply_grid_instant_current_l2=raw.get("lastSupplyGridInstantCurrentL2"),
             last_supply_grid_instant_current_l3=raw.get("lastSupplyGridInstantCurrentL3"),
+            eco_mode_enabled=raw.get("ecoModeEnabled"),
+            max_external_charging_current=raw.get("maxExternalChargingCurrentInMilliAmps"),
+            max_installation_current=raw.get("lastMaxInstallationCurrent"),
             sockets=[DazeSocket.from_dict(s) for s in raw.get("sockets", [])],
         )
 

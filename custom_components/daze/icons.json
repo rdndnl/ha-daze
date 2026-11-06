@@ -5,8 +5,12 @@
       "resume_charge": { "default": "mdi:play-pause" },
       "stop_charge": { "default": "mdi:stop" }
     },
+    "number": {
+      "max_power": { "default": "mdi:speedometer" }
+    },
     "switch": {
-      "charging": { "default": "mdi:ev-station" }
+      "charging": { "default": "mdi:ev-station" },
+      "eco_mode": { "default": "mdi:solar-power-variant", "state": { "off": "mdi:lightning-bolt" } }
     }
   }
 }

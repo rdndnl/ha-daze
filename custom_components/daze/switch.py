@@ -30,7 +30,7 @@ from .const import (
     OPTIMISTIC_STATE_TIMEOUT_SECONDS,
 )
 from .coordinator import DazeCoordinator
-from .entity import DazeSocketEntity, socket_device_info
+from .entity import DazeEvseEntity, DazeSocketEntity, evse_device_info, socket_device_info
 
 
 async def async_setup_entry(
@@ -41,6 +41,7 @@ async def async_setup_entry(
     entities: list[SwitchEntity] = []
     for network_uid, network_data in coordinator.data.networks.items():
         for evse in network_data.evses:
+            entities.append(DazeEcoModeSwitch(coordinator, network_uid, evse.serial_number))
             for socket in evse.sockets:
                 entities.append(
                     DazeChargingSwitch(coordinator, network_uid, evse.serial_number, socket.id)
@@ -126,6 +127,60 @@ class DazeChargingSwitch(DazeSocketEntity, SwitchEntity):
     def _handle_coordinator_update(self) -> None:
         # Drop the assumption as soon as reality agrees with it, so a later genuine
         # change from the wallbox side is not masked by a stale override.
+        if self._optimistic_is_on is not None and self._reported_is_on == self._optimistic_is_on:
+            self._optimistic_is_on = None
+        super()._handle_coordinator_update()
+
+
+class DazeEcoModeSwitch(DazeEvseEntity, SwitchEntity):
+    """The wallbox's eco mode: on = PV self-consumption ("Autoconsumo"), off = "Boost".
+
+    One per wallbox, not per socket: the setting lives on the EVSE (and the backend
+    mirrors it onto the network). In eco mode the wallbox follows the PV surplus by
+    itself through its own grid clamps (Power Manager), pausing when there is none, so
+    Home Assistant only has to flip the mode. Same optimistic-state handling as the
+    charging switch, because the polled value lags the command in the same way.
+    """
+
+    _attr_translation_key = "eco_mode"
+
+    def __init__(self, coordinator: DazeCoordinator, network_uid: str, evse_serial: str) -> None:
+        super().__init__(coordinator, network_uid, evse_serial)
+        self._attr_unique_id = f"{evse_serial}_eco_mode"
+        self._optimistic_is_on: bool | None = None
+        self._optimistic_until: float = 0.0
+        network_data = self._network_data
+        evse = self._evse
+        if network_data is not None and evse is not None:
+            self._attr_device_info = evse_device_info(network_data.network, evse)
+
+    @property
+    def _reported_is_on(self) -> bool | None:
+        evse = self._evse
+        return None if evse is None else evse.eco_mode_enabled
+
+    @property
+    def is_on(self) -> bool | None:
+        if self._optimistic_is_on is not None and time.monotonic() < self._optimistic_until:
+            return self._optimistic_is_on
+        return self._reported_is_on
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        await self.coordinator.api.async_set_eco_mode(self._evse_serial, True)
+        await self._async_assume_state(True)
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        await self.coordinator.api.async_set_eco_mode(self._evse_serial, False)
+        await self._async_assume_state(False)
+
+    async def _async_assume_state(self, is_on: bool) -> None:
+        self._optimistic_is_on = is_on
+        self._optimistic_until = time.monotonic() + OPTIMISTIC_STATE_TIMEOUT_SECONDS
+        self.async_write_ha_state()
+        await self.coordinator.async_request_refresh()
+
+    @callback
+    def _handle_coordinator_update(self) -> None:
         if self._optimistic_is_on is not None and self._reported_is_on == self._optimistic_is_on:
             self._optimistic_is_on = None
         super()._handle_coordinator_update()
