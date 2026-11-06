@@ -328,3 +328,43 @@ async def test_charge_command_http_error_raises_cannot_connect(hass, aioclient_m
             await api.async_start_charge("TEST0000001")
     finally:
         await session.close()
+
+
+@pytest.mark.parametrize(("enabled", "modality"), [(True, 2), (False, 1)])
+async def test_set_eco_mode_puts_recharge_modality(hass, aioclient_mock, enabled, modality):
+    """Eco mode is the portal's rechargeModality: 2 = self-consumption, 1 = standard."""
+    aioclient_mock.put(
+        f"{WEBAPI_BASE_URL}/v3/evses/TEST0000001/rechargeModality",
+        json={"message": "", "errors": []},
+    )
+    session = aioclient_mock.create_session(hass.loop)
+    try:
+        api = DazeApiClient(session, _fresh_auth(session))
+        result = await api.async_set_eco_mode("TEST0000001", enabled)
+    finally:
+        await session.close()
+
+    assert result is None
+    method, url, data, _headers = aioclient_mock.mock_calls[-1]
+    assert method == "PUT"
+    assert url.path == "/v3/evses/TEST0000001/rechargeModality"
+    assert data == {"newRechargeModality": modality, "sendRpcToDevice": True}
+
+
+async def test_set_max_charging_current_posts_milliamps(hass, aioclient_mock):
+    aioclient_mock.post(
+        f"{WEBAPI_BASE_URL}/v3/evses/TEST0000001/configurations/maxExternalChargingCurrent",
+        json={"message": "", "errors": []},
+    )
+    session = aioclient_mock.create_session(hass.loop)
+    try:
+        api = DazeApiClient(session, _fresh_auth(session))
+        await api.async_set_max_charging_current("TEST0000001", 6521)
+    finally:
+        await session.close()
+
+    _method, _url, data, _headers = aioclient_mock.mock_calls[-1]
+    assert data == {
+        "evseSerialNumber": "TEST0000001",
+        "maxExternalChargingCurrentInMilliAmps": 6521,
+    }

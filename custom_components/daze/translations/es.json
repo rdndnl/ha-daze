@@ -129,8 +129,12 @@
       "grid_current_l3": { "name": "Corriente de red L3" },
       "tariff": { "name": "Tarifa energética" }
     },
+    "number": {
+      "max_power": { "name": "Potencia máxima de carga" }
+    },
     "switch": {
-      "charging": { "name": "Carga" }
+      "charging": { "name": "Carga" },
+      "eco_mode": { "name": "Modo eco (autoconsumo FV)" }
     }
   }
 }

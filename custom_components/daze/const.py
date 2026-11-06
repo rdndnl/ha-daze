@@ -101,3 +101,8 @@ CHARGE_COMMAND_LABELS: dict[int, str] = {
 # enough that a command the wallbox silently ignored corrects itself while the user is
 # still looking at it.
 OPTIMISTIC_STATE_TIMEOUT_SECONDS = 45
+
+# RechargeModality enum of PUT /v3/evses/{serial}/rechargeModality, as defined by the
+# vendor web portal. Standard is what the mobile app calls "Boost".
+RECHARGE_MODALITY_STANDARD = 1
+RECHARGE_MODALITY_SELF_CONSUMPTION = 2
